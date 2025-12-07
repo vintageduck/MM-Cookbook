@@ -1,0 +1,512 @@
+<!DOCTYPE html>
+<html lang="en-GB">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+    <meta name="apple-mobile-web-app-title" content="Cookbook">
+    <title>Mother Marston's Cookbook</title>
+    
+    <!-- Editorial Serif Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400;0,700;1,400&family=Lora:ital,wght@0,400;0,500;1,400&display=swap" rel="stylesheet">
+
+    <style>
+        :root {
+            --bg: #0a0a0a; /* Richer, warmer black */
+            --card-bg: #161616;
+            --card-border: #2a2a2a;
+            --text-main: #e5e5e5;
+            --text-muted: #888;
+            --accent: #d4af37; /* Gold accent for serif vibe */
+            --danger: #b33a3a;
+            
+            --font-head: 'Playfair Display', serif;
+            --font-body: 'Lora', serif;
+        }
+
+        * { margin: 0; padding: 0; box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
+
+        body {
+            background-color: var(--bg);
+            color: var(--text-main);
+            font-family: var(--font-body);
+            height: 100dvh;
+            overflow: hidden;
+            display: flex;
+            flex-direction: column;
+        }
+
+        /* --- ELEGANT NAV --- */
+        nav {
+            padding: 50px 24px 15px 24px;
+            background: rgba(10, 10, 10, 0.9);
+            backdrop-filter: blur(15px);
+            -webkit-backdrop-filter: blur(15px);
+            border-bottom: 1px solid var(--card-border);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            position: fixed;
+            top: 0;
+            width: 100%;
+            z-index: 50;
+        }
+
+        .nav-brand { 
+            font-family: var(--font-head); 
+            font-size: 1.2rem; 
+            font-weight: 700; 
+            letter-spacing: 0.5px;
+            font-style: italic;
+        }
+
+        button.text-btn {
+            background: none;
+            border: none;
+            color: var(--text-main);
+            font-family: var(--font-body);
+            font-size: 0.95rem;
+            cursor: pointer;
+            opacity: 0.8;
+            letter-spacing: 0.5px;
+        }
+
+        /* --- MAIN LIST --- */
+        main {
+            flex: 1;
+            padding-top: 80px;
+            padding-bottom: 40px;
+            overflow-y: auto;
+            -webkit-overflow-scrolling: touch;
+        }
+
+        .header-section {
+            padding: 30px 24px 10px 24px;
+        }
+
+        h1 { 
+            font-family: var(--font-head);
+            font-size: 2.8rem; 
+            font-weight: 400; 
+            margin-bottom: 5px;
+            line-height: 1.1;
+        }
+        
+        .subtitle {
+            font-size: 0.9rem;
+            color: var(--text-muted);
+            font-style: italic;
+            margin-bottom: 25px;
+        }
+
+        /* --- SEARCH --- */
+        .search-wrapper {
+            margin: 0 24px 30px 24px;
+            border-bottom: 1px solid var(--card-border);
+        }
+        
+        .search-wrapper input {
+            width: 100%;
+            background: transparent;
+            border: none;
+            color: var(--text-main);
+            font-family: var(--font-body);
+            font-size: 1rem;
+            padding: 10px 0;
+        }
+        .search-wrapper input:focus { outline: none; border-bottom: 1px solid var(--text-muted); }
+
+        /* --- RECIPE CARDS --- */
+        .recipe-list { padding: 0 24px; display: flex; flex-direction: column; gap: 20px; }
+
+        .recipe-card {
+            display: flex;
+            align-items: center;
+            gap: 20px;
+            padding: 10px 0;
+            border-bottom: 1px solid #1a1a1a;
+            position: relative;
+            cursor: pointer;
+        }
+        
+        .recipe-card:last-child { border-bottom: none; }
+        .recipe-card:active { opacity: 0.7; }
+
+        /* DYNAMIC ICON STYLING */
+        .card-icon {
+            width: 56px;
+            height: 56px;
+            border-radius: 50%; /* Circle looks more elegant */
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            font-size: 1.8rem;
+            flex-shrink: 0;
+            /* Shadow to make it pop against dark bg */
+            box-shadow: 0 4px 12px rgba(0,0,0,0.3);
+            border: 1px solid rgba(255,255,255,0.05);
+        }
+
+        .recipe-info { flex: 1; min-width: 0; }
+        
+        .recipe-title { 
+            font-family: var(--font-head);
+            font-size: 1.3rem; 
+            font-weight: 700; 
+            margin-bottom: 4px;
+            white-space: nowrap; 
+            overflow: hidden; 
+            text-overflow: ellipsis; 
+        }
+        
+        .recipe-meta { 
+            font-size: 0.8rem; 
+            color: var(--text-muted); 
+            font-style: italic;
+        }
+
+        .delete-btn {
+            position: absolute;
+            right: 0;
+            top: 50%;
+            transform: translateY(-50%);
+            background: none;
+            border: none;
+            color: var(--text-muted);
+            font-size: 0.7rem;
+            opacity: 0; /* Hidden until needed or maybe swipe logic later */
+            padding: 10px;
+        }
+        
+        .recipe-card:hover .delete-btn { opacity: 1; }
+
+        /* --- MODAL --- */
+        .modal {
+            position: fixed;
+            top: 0; left: 0; width: 100%; height: 100%;
+            background: var(--bg);
+            z-index: 100;
+            display: flex;
+            flex-direction: column;
+            transform: translateY(100%);
+            transition: transform 0.4s cubic-bezier(0.19, 1, 0.22, 1);
+        }
+
+        .modal.open { transform: translateY(0); }
+
+        .modal-header {
+            padding: 60px 24px 20px 24px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            border-bottom: 1px solid var(--card-border);
+        }
+
+        .modal-body {
+            padding: 30px 24px;
+            overflow-y: auto;
+            display: flex;
+            flex-direction: column;
+            gap: 25px;
+        }
+
+        .input-group label {
+            display: block;
+            font-family: var(--font-head);
+            color: var(--text-muted);
+            font-size: 0.9rem;
+            margin-bottom: 10px;
+        }
+
+        .input-text, .input-code {
+            width: 100%;
+            background: var(--card-bg);
+            border: 1px solid var(--card-border);
+            color: var(--text-main);
+            padding: 15px;
+            font-family: var(--font-body);
+            font-size: 1rem;
+            border-radius: 4px;
+        }
+        
+        .input-code {
+            font-family: 'Menlo', monospace;
+            font-size: 0.8rem;
+            min-height: 150px;
+        }
+
+        /* STYLE PICKER ROW */
+        .style-picker-row {
+            display: flex;
+            align-items: center;
+            gap: 15px;
+            background: var(--card-bg);
+            padding: 15px;
+            border: 1px solid var(--card-border);
+            border-radius: 4px;
+        }
+
+        input[type="color"] {
+            -webkit-appearance: none;
+            border: none;
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            overflow: hidden;
+            background: none;
+            cursor: pointer;
+        }
+        
+        input[type="color"]::-webkit-color-swatch-wrapper { padding: 0; }
+        input[type="color"]::-webkit-color-swatch { border: none; border-radius: 50%; border: 1px solid rgba(255,255,255,0.2); }
+
+        #emojiPreview {
+            font-size: 2rem;
+            width: 50px;
+            text-align: center;
+            background: transparent;
+            border: none;
+            color: white;
+        }
+
+        /* --- VIEWER --- */
+        .viewer {
+            position: fixed;
+            top: 0; left: 0; width: 100%; height: 100%;
+            background: #000;
+            z-index: 200;
+            transform: translateY(100%); /* Slide up instead of left for 'page' feel */
+            transition: transform 0.4s cubic-bezier(0.19, 1, 0.22, 1);
+        }
+
+        .viewer.open { transform: translateY(0); }
+
+        .viewer-controls {
+            position: absolute;
+            bottom: 30px; left: 50%;
+            transform: translateX(-50%);
+            z-index: 210;
+        }
+
+        .close-pill {
+            background: rgba(20, 20, 20, 0.8);
+            backdrop-filter: blur(10px);
+            color: white;
+            border: 1px solid rgba(255,255,255,0.2);
+            padding: 12px 24px;
+            border-radius: 30px;
+            font-family: var(--font-body);
+            font-size: 0.9rem;
+            font-weight: 600;
+            cursor: pointer;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.5);
+        }
+
+        iframe { width: 100%; height: 100%; border: none; background: #fff; }
+
+    </style>
+</head>
+<body>
+
+    <nav>
+        <div class="nav-brand">M.M. Cookbook</div>
+        <button class="text-btn" onclick="openEditor()">+ New Entry</button>
+    </nav>
+
+    <main>
+        <div class="header-section">
+            <h1>Recipes</h1>
+            <div class="subtitle">A collection of culinary essentials.</div>
+        </div>
+
+        <div class="search-wrapper">
+            <input type="text" id="searchInput" placeholder="Search collection..." onkeyup="filterRecipes()">
+        </div>
+
+        <div class="recipe-list" id="recipeList">
+            <!-- Dynamic Content -->
+        </div>
+    </main>
+
+    <!-- EDITOR MODAL -->
+    <div class="modal" id="editorModal">
+        <div class="modal-header">
+            <button class="text-btn" style="color: var(--text-muted);" onclick="closeEditor()">Cancel</button>
+            <span style="font-family: var(--font-head); font-style: italic;">New Entry</span>
+            <button class="text-btn" style="color: var(--accent);" onclick="saveRecipe()">Save</button>
+        </div>
+        
+        <div class="modal-body">
+            
+            <div class="input-group">
+                <label>Appearance</label>
+                <div class="style-picker-row">
+                    <input type="color" id="inputColor" value="#333333">
+                    <input type="text" id="inputEmoji" placeholder="🌮" maxlength="2" id="emojiPreview">
+                    <span style="font-size: 0.8rem; color: #666; margin-left: auto;">Pick colour & icon</span>
+                </div>
+            </div>
+
+            <div class="input-group">
+                <label>Title</label>
+                <input type="text" class="input-text" id="inputTitle" placeholder="e.g. Midnight Burger">
+            </div>
+            
+            <div class="input-group">
+                <label>Source Code (HTML)</label>
+                <textarea class="input-code" id="inputCode" placeholder="Paste generated HTML here..."></textarea>
+            </div>
+        </div>
+    </div>
+
+    <!-- VIEWER -->
+    <div class="viewer" id="recipeViewer">
+        <div class="viewer-controls">
+            <button class="close-pill" onclick="closeViewer()">Close Recipe</button>
+        </div>
+        <iframe id="contentFrame"></iframe>
+    </div>
+
+    <script>
+        // --- DATA STRUCTURE ---
+        // Includes 'color' field now
+        const fajitaCode = `<!DOCTYPE html><html lang="en-GB"><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1.0,maximum-scale=1.0,user-scalable=no"><title>Fajitas</title><link href="https://fonts.googleapis.com/css2?family=Abril+Fatface&family=Inter:wght@300;500;700&display=swap" rel="stylesheet"><style>*{box-sizing:border-box;margin:0;padding:0}body{font-family:'Inter',sans-serif;background:#111;color:#fff;overflow:hidden}main{height:100dvh;overflow-y:scroll;scroll-snap-type:y mandatory}section{height:100dvh;scroll-snap-align:start;display:flex;flex-direction:column;justify-content:center;align-items:center;padding:2rem;text-align:center;background:linear-gradient(135deg,#2c3e50,#000)}h1{font-family:'Abril Fatface';font-size:3.5rem}.emoji-icon{font-size:5rem;margin-bottom:2rem}</style></head><body><main><section><div class="emoji-icon">🌮</div><h1>Mother Marston&rsquo;s<br>Fajitas</h1><p>Scroll to cook.</p></section><section style="background:linear-gradient(135deg,#e67e22,#d35400)"><h2>01</h2><p>Cook the chicken.</p></section></main></body></html>`;
+
+        const defaultData = [
+            {
+                title: "Mother Marston's Fajitas",
+                emoji: "🌮",
+                color: "#2c3e50", // Slate Blue for Fajitas
+                date: new Date().toISOString(),
+                code: fajitaCode
+            }
+        ];
+
+        const DB_KEY = 'mm_cookbook_editorial';
+        let recipes = JSON.parse(localStorage.getItem(DB_KEY));
+
+        if (!recipes || recipes.length === 0) {
+            recipes = defaultData;
+            localStorage.setItem(DB_KEY, JSON.stringify(recipes));
+        }
+
+        // --- DOM ---
+        const listContainer = document.getElementById('recipeList');
+        const searchInput = document.getElementById('searchInput');
+
+        // --- RENDER ---
+        function renderList(filterText = '') {
+            listContainer.innerHTML = '';
+            
+            const filtered = recipes.filter(r => r.title.toLowerCase().includes(filterText.toLowerCase()));
+
+            if (filtered.length === 0) {
+                listContainer.innerHTML = `<div style="text-align:center; padding:40px; color:#444; font-style:italic;">No entries found.</div>`;
+                return;
+            }
+
+            filtered.forEach((recipe, index) => {
+                const realIndex = recipes.indexOf(recipe);
+                const card = document.createElement('div');
+                card.className = 'recipe-card';
+                card.onclick = (e) => {
+                    if(!e.target.classList.contains('delete-btn')) openViewer(realIndex);
+                };
+
+                // Use the stored Color and Emoji
+                const bgColor = recipe.color || '#333';
+                const iconChar = recipe.emoji || '📄';
+                const dateStr = new Date(recipe.date).toLocaleDateString('en-GB', { month: 'short', year: 'numeric' });
+
+                card.innerHTML = `
+                    <div class="card-icon" style="background-color: ${bgColor}; color: #fff;">
+                        ${iconChar}
+                    </div>
+                    <div class="recipe-info">
+                        <div class="recipe-title">${recipe.title}</div>
+                        <div class="recipe-meta">Added ${dateStr}</div>
+                    </div>
+                    <button class="delete-btn" onclick="deleteRecipe(${realIndex})">Remove</button>
+                `;
+                listContainer.appendChild(card);
+            });
+        }
+
+        function filterRecipes() { renderList(searchInput.value); }
+
+        // --- EDITOR ---
+        const editorModal = document.getElementById('editorModal');
+        const inputTitle = document.getElementById('inputTitle');
+        const inputEmoji = document.getElementById('inputEmoji');
+        const inputColor = document.getElementById('inputColor');
+        const inputCode = document.getElementById('inputCode');
+
+        function openEditor() {
+            inputTitle.value = '';
+            inputEmoji.value = '';
+            inputCode.value = '';
+            inputColor.value = '#333333'; // Reset color
+            editorModal.classList.add('open');
+        }
+
+        function closeEditor() { editorModal.classList.remove('open'); }
+
+        function saveRecipe() {
+            const title = inputTitle.value.trim();
+            const emoji = inputEmoji.value.trim() || '🥘';
+            const color = inputColor.value; // Get the hex color
+            const code = inputCode.value.trim();
+
+            if (!title || !code) { alert("Title and Code are required."); return; }
+
+            recipes.unshift({
+                title,
+                emoji,
+                color, // Save the color
+                code,
+                date: new Date().toISOString()
+            });
+
+            localStorage.setItem(DB_KEY, JSON.stringify(recipes));
+            renderList();
+            closeEditor();
+        }
+
+        function deleteRecipe(index) {
+            if(confirm('Remove this entry?')) {
+                recipes.splice(index, 1);
+                localStorage.setItem(DB_KEY, JSON.stringify(recipes));
+                renderList();
+            }
+        }
+
+        // --- VIEWER ---
+        const viewer = document.getElementById('recipeViewer');
+        const iframe = document.getElementById('contentFrame');
+
+        function openViewer(index) {
+            const recipe = recipes[index];
+            viewer.classList.add('open');
+            const doc = iframe.contentWindow.document;
+            doc.open();
+            doc.write(recipe.code);
+            doc.close();
+        }
+
+        function closeViewer() {
+            viewer.classList.remove('open');
+            setTimeout(() => {
+                iframe.contentWindow.document.open();
+                iframe.contentWindow.document.write('');
+                iframe.contentWindow.document.close();
+            }, 400);
+        }
+
+        renderList();
+
+    </script>
+</body>
+</html>
