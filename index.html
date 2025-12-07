@@ -69,7 +69,11 @@
 
         /* --- NAV --- */
         nav {
-            padding: 15px 24px;
+            /* Top padding = 10px + Size of your Notch/Island */
+            padding-top: calc(10px + env(safe-area-inset-top));
+            padding-bottom: 15px;
+            padding-left: 24px;
+            padding-right: 24px;
             background: var(--bg);
             border-bottom: 1px solid var(--card-border);
             display: flex;
@@ -109,7 +113,7 @@
         /* --- MAIN LIST --- */
         main {
             flex: 1;
-            padding-top: 60px;
+            padding-top: calc(60px + env(safe-area-inset-top));
             padding-bottom: 40px;
             overflow-y: auto;
             -webkit-overflow-scrolling: touch;
@@ -248,7 +252,10 @@
         .modal.open { transform: translateY(0); }
 
         .modal-header {
-            padding: 60px 24px 20px 24px;
+            padding-top: calc(20px + env(safe-area-inset-top));
+            padding-bottom: 20px;
+            padding-left: 24px;
+            padding-right: 24px;            
             display: flex;
             justify-content: space-between;
             align-items: center;
